@@ -546,34 +546,21 @@ int main(int argc, char *argv[]){
   h_hitPeak_sgType3->SetMinimum(0);
 
 
-  // Creat Histogram for signalPlane1 vs signalPlane2
+  // Creat Histogram for top_vs_planes
+std::vector <TH2F*> h_top_vs_planes; // better static?
+  h_planes.reserve(6);
+  for (int i = 0; i < 6; i++){
+    h_top_vs_planes[i] = new TH2F(Form("plane%s", PlaneLabels.at(i).c_str()), Form("plane%s", PlaneLabels.at(i).c_str()), 1, -110, 110, 20, -0.5, 19.5);
+    h_top_vs_planes[i]->SetStats(false);
+    // h_planes[i]->GetXaxis()->SetTickLength(0);
+    // h_planes[i]->GetXaxis()->SetLabelOffset(999);
+    h_top_vs_planes[i]->GetYaxis()->SetTickLength(0);
+    h_top_vs_planes[i]->GetYaxis()->SetTitle("top");
+    h_top_vs_planes[i]->GetXaxis()->SetTitle("Position [cm]");
+    hist_list->Add(h_top_vs_planes[i]);
+  }
+ 
 
-  //TH2F *h_TandU = new TH2F("h_TandU", const_cast<const char*>("SignalPlane TopvsUp"), Form("SignalPlane TopvsUp, run%i", thisRun.GetRunNumber()),50, -160, 160, 50, -160, 160);
-  const char* title_TandU = Form("Signal Plane Top vs Upstream Plane, run%i", thisRun.GetRunNumber());
-TH2F *h_TandU = new TH2F("h_TandU", title_TandU, 50, -160, 160, 50, -160, 160);
-  h_TandU->GetXaxis()->SetTitle("UpstreamPlane ");
-  h_TandU->GetYaxis()->SetTitle("TopPlane");
-  h_TandU->SetMarkerStyle(24);
-  h_TandU->SetMarkerColor(4);
-  hist_list->Add(h_TandU);
-
-  //TH2F *h_TandD = new TH2F("h_TandD", const_cast<const char*>("SignalPlane TopvsDown"), Form("SignalPlane TopvsDown, run%i", thisRun.GetRunNumber()),50, -160, 160, 50, -160, 160);
-  const char* title_TandD = Form("Signal Plane Top vs Downstream Plane, run%i", thisRun.GetRunNumber());
-TH2F *h_TandD = new TH2F("h_TandD", title_TandD, 50, -160, 160, 50, -160, 160);
-  h_TandD->GetXaxis()->SetTitle("DownstreamPlane");
-  h_TandD->GetYaxis()->SetTitle("TopPlane");
-  h_TandD->SetMarkerStyle(24);
-  h_TandD->SetMarkerColor(4);
-  hist_list->Add(h_TandD);
-
-  //TH2F *h_TandB = new TH2F("h_TandB", const_cast<const char*>("SignalPlane TopvsBot"), Form("SignalPlane TopvsBot, run%i", thisRun.GetRunNumber()),50, -160, 160, 50, -160, 160);
-  const char* title_TandB = Form("Signal Plane Top vs Bottom Plane, run%i", thisRun.GetRunNumber());
-TH2F *h_TandB = new TH2F("h_TandB", title_TandB, 50, -160, 160, 50, -160, 160);
-  h_TandB->GetXaxis()->SetTitle("BottomPlane");
-  h_TandB->GetYaxis()->SetTitle("TopPlane");
-  h_TandB->SetMarkerStyle(24);
-  h_TandB->SetMarkerColor(4);
-  hist_list->Add(h_TandB);
 
   //////////////////////////////////////////////////////////////
 
@@ -590,29 +577,6 @@ TH2F *h_TandB = new TH2F("h_TandB", title_TandB, 50, -160, 160, 50, -160, 160);
   //   std::cout << " basic check : size of the spill number list " << thisRun.GetRunSpillNumberFromExtTrig().size() << std::endl;
   // }
 
-// Fill signalPlane1 vs signalPlane2
-for (auto eventit : thisRun.GetRunEventsList()) {
-    for (auto signalit : eventit.GetEventSignalsList()) {
-        int thisSignalType = signalit.GetSignalType();
-        int signalPlane = signalit.GetSignalPlane(); // Assuming there's a method to get the signal plane
-
-        // Check if the signal type is relevant (assuming 3 represents relevant signals)
-        if (thisSignalType == 3) {
-            // Fill histogram based on signal plane
-            if (signalPlane == kTopModule) {
-                h_TandB->Fill(signalit.GetSignalPosition(), kBottomModule);
-                h_TandU->Fill(signalit.GetSignalPosition(), kUpstreamModule);
-                h_TandD->Fill(signalit.GetSignalPosition(), kDownstreamModule);
-            } else if (signalPlane == kBottomModule) {
-                h_TandB->Fill(kTopModule, signalit.GetSignalPosition());
-            } else if (signalPlane == kUpstreamModule) {
-                h_TandU->Fill(kTopModule, signalit.GetSignalPosition());
-            } else if (signalPlane == kDownstreamModule) {
-                h_TandD->Fill(kTopModule, signalit.GetSignalPosition());
-            }
-        }
-    }
-}
 
 
 
@@ -785,6 +749,10 @@ for (auto eventit : thisRun.GetRunEventsList()) {
         auto thisHitMaxChannel = thisHitMax.GetHitDaqChannel();
         h_signalPosition->Fill(signalit.GetSignalPosition());
         h_signalPosition_plane[thisHitMin.GetHitPlane()]->Fill(signalit.GetSignalPosition());
+        
+        //fill h_topplane_plane
+       h_top_vs_planes[thisHitMin.GetHitPlane()]->Fill(signalit.GetSignalPosition(),signalit.GetSignalPosition());
+
         h_signalBar->Fill(thisHitMin.GetHitBar());
         h_signalBar_plane[thisHitMin.GetHitPlane()]->Fill(thisHitMin.GetHitBar());
         h_signalPlane->Fill(thisHitMin.GetHitPlane());
@@ -872,10 +840,23 @@ for (auto eventit : thisRun.GetRunEventsList()) {
     h_signalType_plane[i]->Draw("HIST");
     c_planeSignals[i]->cd(6);
     h_saturatedHits_plane[i]->Draw("HIST");
+
     c_planeSignals[i]->SaveAs(Form("%srun%i_plane%i.C", output_directory.c_str(), thisRun.GetRunNumber(), i));
     c_planeSignals[i]->SaveAs(Form("%srun%i_plane%i.pdf", output_directory.c_str(), thisRun.GetRunNumber(), i));
   }
+// draw top vs planes
+std::vector<TCanvas*> c_top_vs_planes;
+  c_top_vs_planes.reserve(6);
+  for (int i = 0; i < 6; i++){
+    c_top_vs_planes[i] = new TCanvas(Form("c_top_plane%i", i), Form("top_plane%i", i), 900, 900);
+    c_top_vs_planes[i]->Divide(3,2);
+    c_top_vs_planes[i]->cd(1);
+    h_top_vs_planes[i]->Draw("HIST");
+    
 
+    c_top_vs_planes[i]->SaveAs(Form("%srun%i_plane%i.C", output_directory.c_str(), thisRun.GetRunNumber(), i));
+    c_top_vs_planes[i]->SaveAs(Form("%srun%i_plane%i.pdf", output_directory.c_str(), thisRun.GetRunNumber(), i));
+  }
   // plot bad signals in some way
   TCanvas *c_badSignals = new TCanvas("c_badSignals", "'Bad' Signals", 900, 900);
   c_badSignals->Divide(2,2);
@@ -1162,17 +1143,8 @@ for (auto eventit : thisRun.GetRunEventsList()) {
   c_saturated->SaveAs(Form("%srun%i_saturated.C", output_directory.c_str(), thisRun.GetRunNumber()));
   c_saturated->SaveAs(Form("%srun%i_saturated.pdf", output_directory.c_str(), thisRun.GetRunNumber()));
 
-  //Draw plan1_plan2
-   TCanvas *c_signalPlane1_vs_signalPlane2 = new TCanvas("c_signalPlane1_vs_signalPlane2", "signalPlane1_vs_signalPlane2", 900, 900);
-  c_signalPlane1_vs_signalPlane2->Divide(2,2);
-  c_signalPlane1_vs_signalPlane2->cd(1);
-  h_TandB->Draw("HIST");
-  c_signalPlane1_vs_signalPlane2->cd(2);
-  h_TandU->Draw("HIST");
-  c_signalPlane1_vs_signalPlane2->cd(3);
-  h_TandD->Draw("HIST");
-  c_signalPlane1_vs_signalPlane2->SaveAs(Form("%srun%i_signalPlane1_vs_signalPlane2.C", output_directory.c_str(), thisRun.GetRunNumber()));
-  c_signalPlane1_vs_signalPlane2->SaveAs(Form("%srun%i_signalPlane1_vs_signalPlane2.pdf", output_directory.c_str(), thisRun.GetRunNumber()));
+
+    
 
   // save all files in a histogram list and output to a root file
   TFile *f_out = new TFile(Form("%srun%i_histos.root", output_directory.c_str(), thisRun.GetRunNumber()), "RECREATE");
