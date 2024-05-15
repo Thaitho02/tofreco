@@ -10,7 +10,7 @@ void readplane()
         {
             tIn->Add(TString::Format("/home/thaitho/tof/output/run16573_outputTree.root"));
         }
-    // em khai báo hết các biên từ dòng 9 tới dòng 46 như mẫu a ghi đi
+    
     Double_t EventTimeOfFlight;
     Int_t EventNSignals, EventNHits;
     vector<int> *SignalType, *HitFeb, *HitSampicChannel, *HitSampic, *HitDaqChannel, *HitPlane, *HitBar, *HitEdge;
