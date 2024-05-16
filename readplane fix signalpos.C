@@ -10,7 +10,6 @@ void readplane()
         {
             tIn->Add(TString::Format("/home/thaitho/tof/output/run16573_outputTree.root"));
         }
-    // em khai báo hết các biên từ dòng 9 tới dòng 46 như mẫu a ghi đi
     Double_t EventTimeOfFlight;
     Int_t EventNSignals, EventNHits;
     Int_t SignalBar ,SignalPlane, SignalType,HitFeb, HitSampicChannel, HitSampic, HitDaqChannel, HitPlane, HitBar, HitEdge,SignalHitsListIndex;
@@ -70,12 +69,22 @@ void readplane()
         //hist_top_bot->Fill(1.0,1.0);
         //hist_top_upstream->Fill(1.0, 1.0);
         //hist_top_downstream->Fill(1.0,1.0);
+         // Lưu trữ tọa độ x và y
+        Double_t xPos = 0.0;
+        Double_t yPos = 0.0;
 
-        // Fill histograms 
+        //toa do
+
+        for (size_t j = 0; j < SignalPosition->size(); j++)
+        {
         if (SignalPlane == 3) { // Top Plane
-            SignalPosition_T[iEntry] =SignalPosition;
+            SignalPosition_T[iEntry] =SignalPosition = yPos;
+                }
         //    if (SignalPosition != -9999) { // Some condition to avoid invalid values
-                hist_top_bot->Fill(SignalPosition_T[iEntry],SignalPosition_T[iEntry]);
+        else if (SignalPlane == 2) { //Botom plane
+            SignalPosition_B[iEntry] =SignalPosition = xPos;
+                }
+                hist_top_bot->Fill(SignalPosition_T[iEntry],SignalPosition_B[iEntry]);
                 // hist_top_upstream->Fill(SignalPosition, HitPlane); 
                 // hist_top_downstream->Fill(SignalPosition, SignalTime); 
         //    }
@@ -88,16 +97,16 @@ void readplane()
     top_vs_planes->Divide(2, 2);
     top_vs_planes->cd(1);
     hist_top_bot->Draw("colz");
-    top_vs_planes->cd(2);
-    hist_top_upstream->Draw("colz");
-    top_vs_planes->cd(3);
-    hist_top_downstream->Draw("colz");
-    top_vs_planes->Draw();
+    //top_vs_planes->cd(2);
+    //hist_top_upstream->Draw("colz");
+    //top_vs_planes->cd(3);
+   // hist_top_downstream->Draw("colz");
+   // top_vs_planes->Draw();
 
     // save to file
     TFile *tfile = new TFile("mychart.root","RECREATE");
-    hist_top_upstream->Write();
-    hist_top_downstream->Write();
+   // hist_top_upstream->Write();
+   // hist_top_downstream->Write();
     hist_top_bot->Write();
     tfile->Close();
     delete hist_top_upstream;
