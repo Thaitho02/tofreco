@@ -41,46 +41,49 @@ void planeposition()
         {
             if ((*SignalPlane)[j] == 3)
             {
-                planeT[i] = (*SignalPosition)[j];
+                planeT[i] = (*SignalPosition)[3];
                 h_Top->Fill(planeT[i]);   
             }
             else if ((*SignalPlane)[j] == 2)
             {
-                planeB[i] = (*SignalPosition)[j];
+                planeB[i] = (*SignalPosition)[2];
                 h_Bot->Fill(planeB[i]);
             }
             else if ((*SignalPlane)[j] == 4)
             {
-                planeU[i] = (*SignalPosition)[j];
+                planeU[i] = (*SignalPosition)[4];
                 h_Up->Fill(planeU[i]);
             }
             else if ((*SignalPlane)[j] == 5)
             {
-                planeD[i] = (*SignalPosition)[j];
+                planeD[i] = (*SignalPosition)[5];
                 h_Down->Fill(planeD[i]);
             }
 
             // Điền giá trị vào histogram 2D
-            if ((*SignalPlane)[j] == 3 && (*SignalPlane)[j] == 2)
+            if ((*SignalPlane)[3] && (*SignalPlane)[2] )
             {
-                planeT[i] = (*SignalPosition)[j];
-                planeB[i] = (*SignalPosition)[j];
+                planeT[i] = (*SignalPosition)[3];
+                planeB[i] = (*SignalPosition)[2];
                 hist_top_bot->Fill(planeT[i], planeB[i]);
             }
-            if ((*SignalPlane)[j] == 3 && (*SignalPlane)[j] == 4)
+            if ((*SignalPlane)[3]  && (*SignalPlane)[4] )
             {
-               planeT[i] = (*SignalPosition)[j];
-               planeU[i] = (*SignalPosition)[j];
-               hist_top_upstream->Fill(planeT[i], planeU[i]);
+               planeT[i] = (*SignalPosition)[3];
+               planeU[i] = (*SignalPosition)[4];
+            hist_top_upstream->Fill(planeT[i], planeU[i]);
             }
-           if ((*SignalPlane)[j] == 3 && (*SignalPlane)[j] == 5)
+           if ((*SignalPlane)[3]  && (*SignalPlane)[5] )
            {
-                planeT[i] = (*SignalPosition)[j];
-                planeD[i] = (*SignalPosition)[j];
+                planeT[i] = (*SignalPosition)[3];
+                planeD[i] = (*SignalPosition)[5];
                 hist_top_downstream->Fill(planeT[i], planeD[i]);
-            }
+         }
         }
-    }
+
+        }
+        
+    
          //Fill histogram với tọa độ x và y
      
     
@@ -96,20 +99,20 @@ void planeposition()
     h_Up->Draw();
     c_planes->cd(4);
     h_Down->Draw();
-    c_planes->SaveAs("Signalplanes.png");
+    c_planes->SaveAs("Signalplanescheck1.png");
 
     // Tạo một canvas và vẽ histogram 2 chiều
     TCanvas *c_hist = new TCanvas("hist", "Canvas", 1200, 800);
     c_hist->Divide(2, 2);
     c_hist->cd(1);
-    h_hist_top_bot->Draw("COLZ");;
+    hist_top_bot->Draw("COLZ");
     c_hist->cd(2);
     hist_top_downstream->Draw("COLZ");
     c_hist->cd(3);
     hist_top_upstream->Draw("COLZ");
 
     // lưu file
-    c_hist->SaveAs("myhist.png");
+    c_hist->SaveAs("myhistcheck.png");
 
 
     // Giải phóng bộ nhớ
