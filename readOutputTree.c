@@ -4,7 +4,7 @@
 #include <iostream>
 
 void readOutputTree() {
-    TFile* file = TFile::Open("/home/lecamvi/Documents/TOF_thesis/output/run16480_outputTree.root", "READ");
+    TFile* file = TFile::Open("/home/thaitho/tof/output/run16480_outputTree.root", "READ");
     if (!file || file->IsZombie()) {
         std::cerr << "Error opening file" << std::endl;
         return;
