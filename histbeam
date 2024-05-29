@@ -1,51 +1,51 @@
 #include "TCanvas.h"
 #include "TChain.h"
-#include "TH1D.h"
+#include "TH1F.h"
 #include "TH2F.h"
-#include <cmath>
 #include <vector>
 
-void planeposition() {
+void histbeam() {
+  // Load the input TChain
   TChain *tIn = new TChain("TofHitsTree");
-  tIn->Add("/home/qpham/Downloads/run16573_outputTree.root");
+  tIn->Add("/home/thaitho/tof/output/run16120_outputTree.root");
 
+  // Initialize pointers for branches
   std::vector<Double_t> *SignalPosition = nullptr;
   std::vector<Double_t> *SignalPlane = nullptr;
 
   tIn->SetBranchAddress("SignalPosition", &SignalPosition);
   tIn->SetBranchAddress("SignalPlane", &SignalPlane);
 
-  // Khởi tạo histogram
+  // Initialize histograms for signal positions
   TH1F *h_Top = new TH1F("h_Top", "Top Signal Position", 50, -150, 150);
   TH1F *h_Bot = new TH1F("h_Bot", "Bottom Signal Position", 50, -150, 150);
-  TH1F *h_Up = new TH1F("h_Up", "Up Signal Position", 50, -150, 150);
-  TH1F *h_Down = new TH1F("h_Down", "Down Signal Position", 50, -150, 150);
+  TH1F *h_Up = new TH1F("h_Up", "Upstream Signal Position", 50, -150, 150);
+  TH1F *h_Down =
+      new TH1F("h_Down", "Downstream Signal Position", 50, -150, 150);
 
-  //  tao Histograms 2 chieu
-  TH2F *hist_top_bot = new TH2F("hist_top_bot", "Top vs Bottom Plane", 50, -150,
-                                150, 50, -150, 150);
-
-  TH2F *hist_top_upstream = new TH2F("hist_top_upstream", "Top vs Upstream", 50,
+  // Initialize 2D histograms for correlations
+  TH2F *hist_upstream_top = new TH2F("hist_upstream_top", "Up vs Top Plane", 50,
                                      -150, 150, 50, -150, 150);
-  TH2F *hist_top_downstream = new TH2F(
-      "hist_top_downstream", "Top vs Downstream", 50, -150, 150, 50, -150, 150);
+  TH2F *hist_upstream_bot = new TH2F("hist_upstream_bot", "Up vs Bottom Plane",
+                                     50, -150, 150, 50, -150, 150);
+  TH2F *hist_upstream_downstream =
+      new TH2F("hist_upstream_downstream", "Up vs Downstream Plane", 50, -150,
+               150, 50, -150, 150);
 
   Long64_t nEntries = tIn->GetEntries();
 
-  // Khởi tạo mảng
-  // std::vector< Double_t> *planeT = 0.0, *planeB = 0.0, *planeU = 0.0, *planeD
-  // = 0.0; // Khởi tạo biến
-  std::vector<Double_t> planeT(nEntries, 0.0);
-  std::vector<Double_t> planeB(nEntries, 0.0);
-  std::vector<Double_t> planeU(nEntries, 0.0);
-  std::vector<Double_t> planeD(nEntries, 0.0);
-  int count = 0;
+  // Vectors to hold signal positions
+  std::vector<Double_t> planeT;
+  std::vector<Double_t> planeB;
+  std::vector<Double_t> planeU;
+  std::vector<Double_t> planeD;
 
-  for (Long64_t i = 0; i < nEntries; i++) {
+  // Loop over all entries
+  for (Long64_t i = 0; i < nEntries; ++i) {
     tIn->GetEntry(i);
 
-    // Tìm tọa độ x của SignalPlane top, bot, up, và down
-    for (size_t j = 0; j < SignalPosition->size(); j++) {
+    // Fill histograms and vectors based on SignalPlane values
+    for (size_t j = 0; j < SignalPosition->size(); ++j) {
       if ((*SignalPlane)[j] == 3) {
         planeT.push_back((*SignalPosition)[j]);
         h_Top->Fill((*SignalPosition)[j]);
@@ -55,7 +55,6 @@ void planeposition() {
       } else if ((*SignalPlane)[j] == 4) {
         planeU.push_back((*SignalPosition)[j]);
         h_Up->Fill((*SignalPosition)[j]);
-
       } else if ((*SignalPlane)[j] == 5) {
         planeD.push_back((*SignalPosition)[j]);
         h_Down->Fill((*SignalPosition)[j]);
@@ -63,43 +62,54 @@ void planeposition() {
     }
   }
 
-  // Fill histogram với tọa độ x và y
+  // Fill 2D histograms
   for (size_t i = 0; i < planeT.size(); ++i) {
-    hist_top_bot->Fill(planeB[i], planeT[i]);
-    hist_top_upstream->Fill(planeU[i], planeT[i]);
-    hist_top_downstream->Fill(planeD[i], planeT[i]);
+    // if (i < planeB.size())
+      hist_upstream_bot->Fill(planeB[i], planeU[i]);
+    // if (i < planeT.size())
+      hist_upstream_top->Fill(planeT[i], planeU[i]);
+    // if (i < planeD.size())
+      hist_upstream_downstream->Fill(planeD[i], planeU[i]);
   }
+  // can see that: PlaneT have smallest number ele
+  std::cout << planeT.size() << std::endl;
+  std::cout << planeB.size() << std::endl;
+  std::cout << planeD.size() << std::endl;
+  std::cout << planeU.size() << std::endl;
 
-  // Tạo một canvas và vẽ histogram 1 chiều
+
+
+  // Draw and save 1D histograms
   TCanvas *c_planes = new TCanvas("planes", "Canvas", 1200, 800);
   c_planes->Divide(2, 2);
   c_planes->cd(1);
-  h_Top->Draw();
+h_Top->Draw();
   c_planes->cd(2);
   h_Bot->Draw();
   c_planes->cd(3);
   h_Up->Draw();
   c_planes->cd(4);
-  h_Down->Draw();
-  c_planes->SaveAs("Signalplanescheck1.png");
+h_Down->Draw();
+  c_planes->SaveAs("Signalplanesbeam16120.png");
 
-  // Tạo một canvas và vẽ histogram 2 chiều
+  // Draw and save 2D histograms
   TCanvas *c_hist = new TCanvas("hist", "Canvas", 1200, 800);
   c_hist->Divide(2, 2);
   c_hist->cd(1);
-  hist_top_bot->Draw("COLZ");
+  hist_upstream_bot->Draw("COLZ");
   c_hist->cd(2);
-  hist_top_downstream->Draw("COLZ");
+  hist_upstream_top->Draw("COLZ");
   c_hist->cd(3);
-  hist_top_upstream->Draw("COLZ");
+  hist_upstream_downstream->Draw("COLZ");
+  c_hist->SaveAs("myhistbeam_16120.png");
 
-  // lưu file
-  c_hist->SaveAs("myhistcheck.png");
-
-  // Giải phóng bộ nhớ
+  // Clean up
   delete tIn;
   delete h_Top;
   delete h_Bot;
   delete h_Up;
   delete h_Down;
+  delete hist_upstream_top;
+  delete hist_upstream_bot;
+  delete hist_upstream_downstream;
 }
