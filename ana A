@@ -806,12 +806,7 @@ int main(int argc, char *argv[]) {
                     cout << thisTrack.start.x << " " << thisTrack.start.y << " " << thisTrack.start.z << " " << thisTrack.start.plane << " " << thisTrack.start.bar << " " << thisTrack.start.position << " " << thisTrack.start.time << " " << thisTrack.timeDiff << endl;
                     cout << thisTrack.end.x << " " << thisTrack.end.y << " " << thisTrack.end.z << " " << thisTrack.end.plane << " " << thisTrack.end.bar << " " << thisTrack.end.position << " " << thisTrack.end.time << endl;
                 }
-            }
-        }
-    }
 
-    return 0;
-}
 
 
 //                       outFile.close();
